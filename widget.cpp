@@ -8,6 +8,9 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->pbConnect->setEnabled(false);
+    ui->pbDisconnect->setEnabled(false);
+
     QObject::connect(&tcp_socket_, &QAbstractSocket::connected, this, &Widget::tcp_doConnected);
     //in tcp_socket_ connected signal event -> in now class event doConnected
     QObject::connect(&tcp_socket_, &QAbstractSocket::disconnected, this, &Widget::tcp_doDisconnected);
@@ -17,12 +20,26 @@ Widget::Widget(QWidget *parent)
     QObject::connect(&ssl_socket_, &QAbstractSocket::disconnected, this, &Widget::ssl_doDisconnected);
     QObject::connect(&ssl_socket_, &QAbstractSocket::readyRead, this, &Widget::ssl_doReadyread);
 
+    QObject::connect(&tcp_socket_, &QAbstractSocket::stateChanged, this, &Widget::tcp_doButtonON);
+    QObject::connect(&ssl_socket_, &QAbstractSocket::stateChanged, this, &Widget::ssl_doButtonON);
 }
 
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+
+void Widget::tcp_doButtonON()
+{
+    ui->pbDisconnect->setEnabled(true);
+}
+
+
+void Widget::ssl_doButtonON()
+{
+    ui->pbDisconnect->setEnabled(true);
 }
 
 
@@ -35,7 +52,7 @@ void Widget::tcp_doConnected()
 
 void Widget::tcp_doDisconnected()
 {
-    QString msg = "Disconnected to " + tcp_socket_.peerAddress().toString() + "\r\n";
+    QString msg = "Disconnected to " + tcp_socket_.peerAddress().toString() + "\r\r\n";
     ui->pteMessage->insertPlainText(msg);
 }
 
@@ -56,7 +73,7 @@ void Widget::ssl_doConnected()
 
 void Widget::ssl_doDisconnected()
 {
-    QString msg = "Disconnected to " + ssl_socket_.peerAddress().toString() + "\r\n";
+    QString msg = "Disconnected to " + ssl_socket_.peerAddress().toString() + "\r\r\n";
     ui->pteMessage->insertPlainText(msg);
 }
 
@@ -75,6 +92,7 @@ void Widget::on_pbConnect_clicked()
     }else if (tcp_ssl_mod == 2){
         ssl_socket_.connectToHostEncrypted(ui->leHost->text(), ui->lePort->text().toUShort());
     }
+    ui->pbConnect->setEnabled(false);
 }
 
 
@@ -82,6 +100,8 @@ void Widget::on_pbDisconnect_clicked()
 {
     tcp_socket_.close();
     ssl_socket_.close();
+
+    ui->pbDisconnect->setEnabled(false);
 }
 
 
@@ -108,6 +128,7 @@ void Widget::on_pbSSL_clicked()
     ui->lePort->clear();
     ui->lePort->setText("443");
     tcp_ssl_mod = 2;
+    ui->pbConnect->setEnabled(true);
 }
 
 
@@ -116,5 +137,6 @@ void Widget::on_pbTCP_clicked()
     ui->lePort->clear();
     ui->lePort->setText("80");
     tcp_ssl_mod = 1;
+    ui->pbConnect->setEnabled(true);
 }
 

@@ -34,6 +34,9 @@ public slots:
     void ssl_doDisconnected();
     void ssl_doReadyread();
 
+    void tcp_doButtonON();
+    void ssl_doButtonON();
+
 private slots:
     void on_pbConnect_clicked();
 
